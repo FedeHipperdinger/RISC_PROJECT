@@ -1,0 +1,55 @@
+// Targeted testbench
+
+// First part
+load    0,0,0       Cargar Mem[reg[0]] en el registro 0, reg[0]=Mem[0]=4
+load    1,0,0       Cargar Mem[reg[0]] en el registro 1, reg[1]=Mem[4]=6
+loadi   2,44        Cargar 44 en el registro 2, reg[2]=44       //44 = {26'd0 , 101100}
+add     3,2,1       Calcular reg[1] + reg[2] y guardar en reg[3], reg[3]=50 
+store   0,3,0       Guardar reg[3] en Mem[reg[0]], Mem[4]=50
+load    0,0,0       Cargar Mem[reg[0]] en el registro 0, reg[0]=Mem[4]=50  // Cambiar a 0,1,0 para testear mem misalignment
+add     1,1,1       Guardar en reg[1] la suma reg[1]+reg[1], reg[1]=12
+jump    1           PC = PC + reg[1] = PC + 12  // Cambiar a 3 para sumar 50 y testear instruction load misalignment
+add     3,2,1       Instruccion salteada
+store   0,3,0       Instruccion salteada
+inv     1,1         reg[1] = inv(reg[1])
+add     10,1,1      reg[10]=reg[1]+reg[1] //al ser inv(12), reg[1] es muy grande y esto da overflow
+bc      11,10,8     Si hay carry en Rc PC = PC + reg[11] + 8 = PC + 8
+inv     1,1         Instruccion salteada
+inv     1,1         reg[1] = inv(reg[1]) = 12      
+
+//Second part
+mov     31,1        reg[31] = reg[1] = 12
+storei  31,40       Guardar 40 en Mem[reg[31]], Mem[12]=40      //40 = {26'd0 , 101000}
+load    3,31,0      Cargar Mem[reg[31]] en el registro 3, reg[3]=Mem[12]=40
+subc    11,26,1     reg[11]=reg[26]-reg[1]-reg[1].C = 2147483648 - 12   (Esto debe dar overflow)
+bv      30,11,8     Si hay overflow en Rc PC = PC + reg[30] + 8 = PC + 8
+or      11,0,1      Instruccion salteada
+or      11,0,1      reg[11] = reg[0] OR reg[1] = 50 OR 12 = 62
+and     12,11,1     reg[12] = reg[11] AND reg[1] = 62 AND 12 = 12
+addc    13,11,12    reg[13] = reg[11] + reg[12] + reg[12].C = 62 + 12 + 0 = 74
+sub     13,11,12    reg[13] = reg[11] - reg[12] = 62 - 12 = 50
+bz      12,13,4     If(reg[13] == 0) then PC = PC + reg[12] + 4 = PC + 16 // No va a entrar
+bz      12,17,4     If(reg[17] == 0) then PC = PC + reg[12] + 4 = PC + 16 // Si va a entrar
+add     3,2,1       Instruccion salteada
+store   0,3,0       Instruccion salteada
+add     3,2,1       Instruccion salteada
+bnz     12,13,4     If(reg[13] != 0) then PC = PC + reg[12] + 4 = PC + 16 // Si va a entrar
+add     3,2,1       Instruccion salteada
+store   0,3,0       Instruccion salteada
+jal     13,8        reg[13]=PC+4 --- PC = PC + 8
+add     3,2,1       Instruccion salteada
+add     13,13,1     reg[13] = reg[13] + reg[1] = PC + 8
+ret     13          PC = reg[13] = PC + 4
+jral    13,1,4      reg[13]=PC+4 --- PC = PC + reg[1] + 4 = PC + 16 // saltea derecho al stop
+add     3,2,1       Instruccion salteada
+store   0,3,0       Instruccion salteada
+add     3,2,1       Instruccion salteada
+ 
+
+
+
+
+
+
+
+
